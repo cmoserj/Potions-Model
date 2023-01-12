@@ -1,0 +1,496 @@
+---
+title: "Potions Task Plots"
+author: "Cody Moser"
+date: '2023-01-09'
+output: html_document
+---
+
+Load data and package:
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(patchwork)
+library(viridis)
+library(ggnewscale)
+
+path<-('../git/PotionsABM/Results/')
+
+random <- read.csv(paste(path,"random.csv", sep='')) %>% 
+  filter(Crossover == 1) %>% 
+  mutate(ProbDiff = 1 - ProbDiff,
+         ChangeLink = 1 - ChangeLink,
+         CombTime = NumAgents*Step,
+         mutate(Gini = scale(Gini)))
+
+caveman <-read.csv(paste(path,'caveman.csv',sep='')) %>% 
+  filter(Crossover == 1) %>% 
+  mutate(ProbDiff = 1 - ProbDiff,
+         ChangeLink = 1 - ChangeLink,
+         CombTime = NumAgents*Step)
+```
+
+
+Population Size and Connectivity Plots:
+```{r}
+pop<- ggplot(data=random %>% 
+                    mutate(NumAgents = as.factor(NumAgents)) %>%
+                    filter(ChangeLink == 0,
+                           NumAgents != 5,
+                           ProbDiff == 1)
+                  ,aes(y=Step, x=ProbEdge,color=NumAgents))+
+  stat_summary(fun="mean", geom="point", show.legend=F)+
+  stat_summary(fun="mean", geom="line", show.legend=F,size=1.3,size=1.3)+
+  theme_bw()+
+  theme(plot.title=element_text(hjust=0.5,size=20,margin=margin(b=10)),
+        axis.title.y = element_text(margin=margin(r=20),size=20),
+        text=element_text(size=12),
+        aspect.ratio=.8)+
+  scale_color_viridis(discrete=T)+
+  labs(title="Network Connectivity",
+       x="",
+       y="Steps to Crossover",
+       color="Number\nof Agents")
+
+popcom<- ggplot(data=random %>% 
+                    mutate(NumAgents = as.factor(NumAgents)) %>%
+                    filter(ChangeLink == 0,
+                           NumAgents != 5,
+                           ProbDiff == 1)
+                  ,aes(y=CombTime, x=ProbEdge,color=NumAgents))+
+  stat_summary(fun="mean", geom="point", show.legend=F)+
+  stat_summary(fun="mean", geom="line", show.legend=F,size=1.3,size=1.3)+
+  theme_bw()+
+  theme(plot.title=element_text(hjust=0.5,size=20,margin=margin(b=10)),
+        axis.title.y = element_text(margin=margin(r=15),size=20),
+        text=element_text(size=12),
+        aspect.ratio=.8)+
+  scale_color_viridis(discrete=T,option="mako")+
+  labs(x="",
+       y="Combinations to Crossover",
+       color="Number\nof Agents")
+
+popgini<- ggplot(data=random %>% 
+                    mutate(NumAgents = as.factor(NumAgents)) %>%
+                    filter(ChangeLink == 0,
+                           NumAgents != 5,
+                           ProbDiff == 1)
+                  ,aes(y=Gini, x=ProbEdge,color=NumAgents))+
+  stat_summary(fun="mean", geom="point", show.legend=F)+
+  stat_summary(fun="mean", geom="line", show.legend=F,size=1.3)+
+  theme_bw()+
+  theme(plot.title=element_text(hjust=0.5, size=20,margin=margin(b=10)),
+        axis.title.y = element_text(margin=margin(r=20),size=20),
+        text=element_text(size=12),
+        aspect.ratio=.8,
+        legend.title.align = 0.5,
+        axis.title.x = element_text(size=15))+
+    scale_color_viridis(discrete=T,option="inferno",direction=-1)+
+  labs(
+       y="Gini Coefficient",
+       x="Edge Probability",
+       color="Number\nof Agents")+
+    guides(colour = guide_legend(override.aes = list(size=3)))
+
+pop+popcomb+popgini
+```
+
+Diffusion Plots:
+```{r}
+diff<-ggplot(data=random %>% 
+                    filter(NumAgents > 5) %>%
+                    mutate(NumAgents = as.factor(NumAgents)) %>%
+                    filter(ChangeLink == 0) %>%
+                    filter(ProbEdge == 1)
+                  ,aes(y=Step, x=ProbDiff,color=NumAgents))+
+  stat_summary(fun="mean", geom="point", show.legend=F)+
+  stat_summary(fun="mean", geom="line", show.legend=F,size=1.3)+
+  theme_bw()+
+  theme(plot.title=element_text(hjust=0.5,size=20,margin=margin(b=10)),
+        text=element_text(size=12),
+                axis.title.y = element_text(margin=margin(r=20)),
+        aspect.ratio=.8)+
+    scale_color_viridis(discrete=T)+
+  labs(y="",
+       title="Information Diffusion",
+       x="",
+       color="Number\nof Agents")
+
+diffcomb<-ggplot(data=random %>% 
+                    filter(NumAgents > 5) %>%
+                    mutate(NumAgents = as.factor(NumAgents)) %>%
+                    filter(ChangeLink == 0) %>%
+                    filter(ProbEdge == 1)
+                  ,aes(y=CombTime, x=ProbDiff,color=NumAgents))+
+  stat_summary(fun="mean", geom="point", show.legend=F)+
+  stat_summary(fun="mean", geom="line", show.legend=F,size=1.3)+
+  theme_bw()+
+  theme(plot.title=element_text(hjust=0.5,size=20,margin=margin(b=10)),
+        text=element_text(size=12),
+                axis.title.y = element_text(margin=margin(r=20)),
+        aspect.ratio=.8)+
+    scale_color_viridis(discrete=T,option="mako")+
+  labs(y="",
+       x="",
+       color="Number\nof Agents")
+
+diffgini<-ggplot(data=random %>% 
+                    filter(NumAgents > 5) %>%
+                    mutate(NumAgents = as.factor(NumAgents)) %>%
+                    filter(ChangeLink == 0) %>%
+                   filter(ProbEdge == 1)
+                  ,aes(y=Gini, x=ProbDiff,color=NumAgents))+
+  stat_summary(fun="mean", geom="point", show.legend=F)+
+  stat_summary(fun="mean", geom="line", show.legend=F,size=1.3)+
+  theme_bw()+
+  theme(plot.title=element_text(hjust=0.5),
+        text=element_text(size=12),
+        aspect.ratio=.8,
+                axis.title.x = element_text(size=15))+
+    scale_color_viridis(discrete=T,option="inferno",direction=-1)+
+  labs(x="Diffusion Probability",
+       y="",
+       color="")+
+    scale_y_continuous(labels = function(x) format(x, nsmall = 2))+
+    guides(colour = guide_legend(override.aes = list(size=3)))
+
+diff+diffcomb+diffgini
+```
+
+Dynamic Network Plots:
+```{r}
+change<-ggplot(data=random %>% 
+                     mutate(NumAgents = as.factor(NumAgents)) %>%
+                     mutate(ProbEdge = as.factor(ProbEdge)) %>%
+                     filter(ProbDiff == 1)
+                   ,aes(y=Step, x=ChangeLink,color=NumAgents))+
+  stat_summary(fun="mean", geom="point", show.legend=T)+
+  stat_summary(fun="mean", geom="line", show.legend=F,size=1.3)+
+  theme_bw()+
+  theme(plot.title=element_text(hjust=0.5,size=20,margin=margin(b=10)),
+        text=element_text(size=12),
+        axis.title.y = element_text(margin=margin(r=20)),
+        aspect.ratio=.8,
+        legend.title.align = 0.5,
+        legend.title=element_text(size=14))+
+    scale_color_viridis(discrete=T)+
+  labs(title="Dynamic Networks",
+       y="",
+      color="Population\nSize",
+      x="")+
+    guides(colour = guide_legend(override.aes = list(size=5)))
+
+changecomb<-ggplot(data=random %>% 
+                     mutate(NumAgents = as.factor(NumAgents)) %>%
+                     mutate(ProbEdge = as.factor(ProbEdge)) %>%
+                     filter(ProbDiff == 1)
+                   ,aes(y=CombTime, x=ChangeLink,color=NumAgents))+
+  stat_summary(fun="mean", geom="point", show.legend=T)+
+  stat_summary(fun="mean", geom="line", show.legend=F,size=1.3)+
+  theme_bw()+
+  theme(plot.title=element_text(hjust=0.5,size=20,margin=margin(b=10)),
+        text=element_text(size=12),
+        axis.title.y = element_text(margin=margin(r=20)),
+        aspect.ratio=.8,
+        legend.title.align = 0.5)+
+    scale_color_viridis(discrete=T,option="mako")+
+  labs(y="",
+      color="",
+      x="")+
+    guides(colour = guide_legend(override.aes = list(size=5)))
+
+changegini<-ggplot(data=random %>% 
+                     mutate(NumAgents = as.factor(NumAgents)) %>%
+                     mutate(ProbEdge = as.factor(ProbEdge)) %>%
+                     filter(ProbDiff == 1)
+                   ,aes(y=Gini, x=ChangeLink,color=NumAgents))+
+  stat_summary(fun="mean", geom="point", show.legend=T)+
+  stat_summary(fun="mean", geom="line", show.legend=F,size=1.3)+
+  theme_bw()+
+  theme(plot.title=element_text(hjust=0.5),
+        text=element_text(size=12),
+                axis.title.y = element_text(margin=margin(r=19)),
+        aspect.ratio=.8,
+        axis.title.x = element_text(size=15),
+                legend.title.align = 0.5)+
+    scale_color_viridis(discrete=T,option="inferno",direction=-1)+
+  labs(color="",
+       x="Link Alteration Probability",
+       y="")+
+  scale_y_continuous(labels = function(x) format(x, nsmall = 2))+
+  guides(colour = guide_legend(override.aes = list(size=5)))
+
+change+changecomb+changini
+```
+
+Combine all plots:
+```{r}
+top_row<-plot_grid(pop,popgini)
+mid_row<-plot_grid(diff,diffgini)
+bottom_row<-plot_grid(change,changegini)
+plot_grid(top_row,mid_row,bottom_row,
+          ncol=1,
+          labels=c("A","B","C"))
+
+layout2<-"
+ADG
+BEH
+CFI"
+Fig2<-pop+popcom+popgini+diff+diffcomb+diffgini+change+changecomb+changegini+
+  plot_layout(design=layout2)+
+  plot_annotation(tag_levels = 'A')
+
+Fig2
+```
+
+Caveman Plots:
+```{r}
+cavegraph<-ggplot(data=caveman %>%
+                   mutate(CliqueSize = as.factor(CliqueSize)) %>%
+                   filter(ChangeLink == 0,
+                          CliqueSize != 8,
+                          ProbDiff == 1),
+                 aes(y=Step, x=NumAgents, color= CliqueSize))+
+  stat_summary(fun="mean",geom="point",show.legend=T)+
+  stat_summary(fun="mean", geom="line", show.legend=F,size=1.3)+
+  theme_bw()+
+  theme(plot.title=element_text(hjust=0.5,size=20,margin=margin(b=10)),
+        text=element_text(size=15),
+                aspect.ratio=.8,
+        legend.title.align = 0.5,
+                axis.title.y = element_text(margin=margin(r=20),size=20))+
+  labs(title="Connected Caveman\nNetworks",
+       x="",
+       y="Steps to Crossover",
+       color="Clique\nSize")+
+    guides(colour = guide_legend(override.aes = list(size=5)))+
+      scale_color_viridis(discrete=T)
+
+
+cavegini<-ggplot(data=caveman %>%
+                   mutate(CliqueSize = as.factor(CliqueSize)) %>%
+                   filter(ChangeLink == 0,
+                  CliqueSize != 8,
+                          ProbDiff == 1),
+                 aes(y=Gini, x=NumAgents, color= CliqueSize))+
+  stat_summary(fun="mean",geom="point",show.legend=T)+
+  stat_summary(fun="mean", geom="line", show.legend=F,size=1.3)+
+  theme_bw()+
+  theme(plot.title=element_text(hjust=0.5),
+        text=element_text(size=15),
+                aspect.ratio=.8,
+                axis.title.x = element_text(size=15),
+                axis.title.y = element_text(margin=margin(r=20),size=20))+
+  labs(title="",
+       x="Number of Agents",
+       y="Gini Coefficient",
+       color="")+
+    guides(colour = guide_legend(override.aes = list(size=5)))+
+      scale_color_viridis(discrete=T,option="inferno")
+
+
+cavelayout<-"
+A
+B"
+
+Fig3<-cavegraph+cavegini+
+  plot_layout(design=cavelayout)+
+  plot_annotation(tag_levels = 'A')
+
+Fig3
+```
+
+
+Caveman Connectivity Plot:
+```{r}
+cc1<-ggplot(data=caveman %>% 
+                     filter(CliqueSize == 3) %>%
+                     mutate(CliqueNum = as.factor(CliqueNum)) %>%
+                     filter(ProbDiff == 1)
+                   ,aes(y=Step, x=ChangeLink,color=CliqueNum))+
+  stat_summary(fun="mean", geom="point", show.legend=T)+
+  stat_summary(fun="mean", geom="line", show.legend=F,size=1.3)+
+  theme_bw()+
+  theme(plot.title=element_text(hjust=0.5,size=20,margin=margin(b=10)),
+        text=element_text(size=12),
+        axis.title.y = element_text(margin=margin(r=20)),
+        aspect.ratio=1,
+        legend.title.align = 0.5)+
+    scale_color_viridis(discrete=T)+
+  labs(title="",
+       y="k=3",
+      color=expression(n[k]),
+      x="")+
+    guides(colour = guide_legend(override.aes = list(size=2)))
+
+cc2<-ggplot(data=caveman %>% 
+                     filter(CliqueSize==4) %>%
+                     mutate(CliqueNum = as.factor(CliqueNum)) %>%
+                     filter(ProbDiff == 1)
+                   ,aes(y=Step, x=ChangeLink,color=CliqueNum))+
+  stat_summary(fun="mean", geom="point", show.legend=T)+
+  stat_summary(fun="mean", geom="line", show.legend=F,size=1.3)+
+  theme_bw()+
+  theme(plot.title=element_text(hjust=0.5,size=20,margin=margin(b=10)),
+        text=element_text(size=12),
+        axis.title.y = element_text(margin=margin(r=20)),
+        aspect.ratio=1,
+        legend.title.align = 0.5)+
+    scale_color_viridis(discrete=T)+
+  labs(title="",
+       y="k=4",
+      color=expression(n[k]),
+      x="")+
+    guides(colour = guide_legend(override.aes = list(size=2)))
+
+cc3<-ggplot(data=caveman %>% 
+                     filter(CliqueSize==5) %>%
+                     mutate(CliqueNum = as.factor(CliqueNum)) %>%
+                     filter(ProbDiff == 1)
+                   ,aes(y=Step, x=ChangeLink,color=CliqueNum))+
+  stat_summary(fun="mean", geom="point", show.legend=T)+
+  stat_summary(fun="mean", geom="line", show.legend=F,size=1.3)+
+  theme_bw()+
+  theme(plot.title=element_text(hjust=0.5,size=20,margin=margin(b=10)),
+        text=element_text(size=12),
+        axis.title.y = element_text(margin=margin(r=20)),
+        aspect.ratio=1,
+        legend.title.align = 0.5)+
+    scale_color_viridis(discrete=T)+
+  labs(title="",
+       y="k=5",
+      color=expression(n[k]),
+      x="")+
+    guides(colour = guide_legend(override.aes = list(size=2)))
+
+cc4<-ggplot(data=caveman %>% 
+                     filter(CliqueSize==6) %>%
+                     mutate(CliqueNum = as.factor(CliqueNum)) %>%
+                     filter(ProbDiff == 1)
+                   ,aes(y=Step, x=ChangeLink,color=CliqueNum))+
+  stat_summary(fun="mean", geom="point", show.legend=T)+
+  stat_summary(fun="mean", geom="line", show.legend=F,size=1.3)+
+  theme_bw()+
+  theme(plot.title=element_text(hjust=0.5,size=20,margin=margin(b=10)),
+        text=element_text(size=12),
+        axis.title.y = element_text(margin=margin(r=20)),
+        aspect.ratio=1,
+        legend.title.align = 0.5)+
+    scale_color_viridis(discrete=T)+
+  labs(title="",
+       y="k=6",
+      color=expression(n[k]),
+      x="")+
+    guides(colour = guide_legend(override.aes = list(size=2)))
+
+
+cclayout<-"
+AB
+CD"
+
+Fig4<-cc1+cc2+cc3+cc4+
+  plot_layout(design=cclayout)+
+  plot_annotation(title = 'Dynamic Caveman Networks', 
+                  subtitle = 'Link Alteration Probability',
+                  theme = theme(plot.title = element_text(hjust = 0.5,vjust=-2,size=25),
+                                plot.subtitle = element_text(hjust=0.5,vjust=-125,size=20)))+
+  plot_annotation(tag_levels = 'A')
+
+Fig4
+```
+
+More In-depth Link change Plot (SI Fig. 1):
+```{r}
+change1<-ggplot(data=random %>% 
+                     filter(NumAgents == 15) %>%
+                     mutate(NumAgents = as.factor(NumAgents)) %>%
+                     mutate(ProbEdge = as.factor(ProbEdge)) %>%
+                     filter(ProbDiff == 1)
+                   ,aes(y=Step, x=ChangeLink,color=ProbEdge))+
+  stat_summary(fun="mean", geom="point", show.legend=F)+
+  stat_summary(fun="mean", geom="line", show.legend=F,size=1.3)+
+  theme_bw()+
+  theme(plot.title=element_text(hjust=0.5,size=20,margin=margin(b=10)),
+        text=element_text(size=12),
+        axis.title.y = element_text(margin=margin(r=20)),
+        aspect.ratio=1,
+        legend.title.align = 0.5)+
+    scale_color_viridis(discrete=T)+
+  labs(title="N=15",
+       y="",
+      color="Population\nSize",
+      x="")+
+    guides(colour = guide_legend(override.aes = list(size=5)))
+
+change2<-ggplot(data=random %>% 
+                     filter(NumAgents == 25) %>%
+                     mutate(NumAgents = as.factor(NumAgents)) %>%
+                     mutate(ProbEdge = as.factor(ProbEdge)) %>%
+                     filter(ProbDiff == 1)
+                   ,aes(y=Step, x=ChangeLink,color=ProbEdge))+
+  stat_summary(fun="mean", geom="point", show.legend=F)+
+  stat_summary(fun="mean", geom="line", show.legend=F,size=1.3)+
+  theme_bw()+
+  theme(plot.title=element_text(hjust=0.5,size=20,margin=margin(b=10)),
+        text=element_text(size=12),
+        axis.title.y = element_text(margin=margin(r=20)),
+        aspect.ratio=1,
+        legend.title.align = 0.5)+
+    scale_color_viridis(discrete=T)+
+  labs(title="N=25",
+       y="",
+      color="Population\nSize",
+      x="")+
+    guides(colour = guide_legend(override.aes = list(size=5)))
+
+change3<-ggplot(data=random %>% 
+                     filter(NumAgents == 50) %>%
+                     mutate(NumAgents = as.factor(NumAgents)) %>%
+                     mutate(ProbEdge = as.factor(ProbEdge)) %>%
+                     filter(ProbDiff == 1)
+                   ,aes(y=Step, x=ChangeLink,color=ProbEdge))+
+  stat_summary(fun="mean", geom="point", show.legend=F)+
+  stat_summary(fun="mean", geom="line", show.legend=F,size=1.3)+
+  theme_bw()+
+  theme(plot.title=element_text(hjust=0.5,size=20,margin=margin(b=10)),
+        text=element_text(size=12),
+        axis.title.y = element_text(margin=margin(r=20)),
+        aspect.ratio=1,
+        legend.title.align = 0.5)+
+    scale_color_viridis(discrete=T)+
+  labs(title="N=50",
+       y="",
+      color="Population\nSize",
+      x="")+
+    guides(colour = guide_legend(override.aes = list(size=5)))
+
+change4<-ggplot(data=random %>% 
+                     filter(NumAgents == 100) %>%
+                     mutate(NumAgents = as.factor(NumAgents)) %>%
+                     mutate(ProbEdge = as.factor(ProbEdge)) %>%
+                     filter(ProbDiff == 1)
+                   ,aes(y=Step, x=ChangeLink,color=ProbEdge))+
+  stat_summary(fun="mean", geom="point", show.legend=T)+
+  stat_summary(fun="mean", geom="line", show.legend=F,size=1.3)+
+  theme_bw()+
+  theme(plot.title=element_text(hjust=0.5,size=20,margin=margin(b=10)),
+        text=element_text(size=12),
+        axis.title.y = element_text(margin=margin(r=20)),
+        legend.title= element_text(size=15),
+        aspect.ratio=1,
+        legend.title.align = 0.5)+
+    scale_color_viridis(discrete=T)+
+  labs(title="N=100",
+       y="",
+      color="Edge Probability",
+      x="")+
+    guides(colour = guide_legend(override.aes = list(size=5)))
+
+layout3<-"ABCD"
+
+SIFig1<-change1+change2+change3+change4+
+  plot_layout(design=layout3)+
+  plot_annotation(title = 'Probability of Link Alteration', 
+                  theme = theme(plot.title = element_text(hjust = 0.5,size=25,vjust=-43)))
+
+SIFig1
+```
