@@ -13,7 +13,7 @@ library(patchwork)
 library(viridis)
 library(ggnewscale)
 
-path<-('../git/PotionsABM/Results/')
+path<-('../git/Potions-Model/Results/')
 
 #Import data, calculate Combination Time, and scale Gini variables
 random <- read.csv(paste(path,"random.csv", sep='')) %>% 
