@@ -6,9 +6,9 @@ You can find the following here:
 - Python code for generating and running the Potions Task on Random, Connected Caveman, Ring, and your own real world networks! 
 - Two Mesa Batchrunners: one for the Random, Caveman, and Ringer networks and one for weighted and unweighted real world networks.
 - A Mesa Visualization Server: use this to visualize Random, Connected Caveman, and Ring networks playing the Potions Task 
-- Edge lists for all networks in the paper
-- CSV data files for data used in the paper
-- An Rmarkdown file for generating plots from our paper
+- Edge lists for all networks in the study
+- CSV data files for data used in the study
+- An Rmarkdown file for generating plots from our manuscript
 
 **For assistance, please contact the corresponding author: Cody Moser (cmoser2@ucmerced.edu)**
 
@@ -32,8 +32,8 @@ All edge lists are contained under `/EdgeLists`. `mercedcogsci.csv` and `karate.
 
 ### Results
 
-Data used in the paper to generate our plots and results are `csv` files listed under `/Results`.
+Data used in the study to generate our plots and results are `csv` files listed under `/Results`.
 
 ### Plotting the Data
 
-Code for generating figures in the paper is located in `/Code/Plots.RMD`.
+Code for generating figures in the manuscript is located in `/Code/Plots.RMD`.
