@@ -24,22 +24,16 @@ To run the visualizer, launch Viz_Server.py and specify which network you are us
 
 To run the batchrunner, launch BatchRunner.py and specify which network you are using the second line of code. Alter the model_params as specified in the comments.
 
-All raw data files are in `/data`, in unprocessed `csv` format, with one exception: the raw naïve listener experiment data contains identifiable information (such as email addresses), so in that case we instead included a processed, de-identified version of the dataset in `/results` (with associated processing code at `/analysis/preprocessing.R`). 
+For using your own real world networks, alter which network you are using in lines 47-55 of Model_RWNetworks.py. For batchruns, use BatchRunnerRW.py
 
-Scripts for preprocessing the data and running the analyses are in `/analysis`. This directory also contains standalone scripts for extracting acoustical data from the audio recordings; to run these, you will need a copy of the full audio corpus, which you can download from <https://doi.org/10.5281/zenodo.5525161>. Note that the audio extraction scripts will *not* be run automatically when knitting the manuscript, even if you set `full_run <- TRUE`.
+### Edge Lists for Real World Networks Used
 
-Preprocessed data, interim datasets, output of models, and the like are in `/results`.
-
-### RMarkdown Code for Generating Plots
-
-Visualization code is in `/viz`, along with images and static data used for non-dynamic visualizations. The `/viz/figures` subdirectory contains static images produced by `figures.Rmd`, which can be regenerated with a `full_run` of `manuscript.Rmd`.
+All edge lists are contained under '/EdgeLists'. mercedcogsci.csv and karate.txt are unweighted networks, all other networks are weighted.
 
 ### Results
 
-Research materials are in `/materials`, and include the protocol used at all fieldsites to collect recordings, a table of directional hypotheses for specific audio features in the preregistration, code to run the naïve listener experiment, and supplementary data and materials.
+Data used in the paper to generate our plots and results are CSV files listed under '/Results/'.
 
-### Edge Lists for Real-World Networks Used
+### Plotting the Data
 
-Code for the naïve listener experiment is available in `/materials/naive-listener`. This directory contains two separate versions of the experiment. The first, `naive-listener_Pushkin.js` is the code actually used to collect the data reported in the paper, distributed via Pushkin at <https://themusiclab.org/quizzes/ids>. This code will only run via Pushkin, so it will not execute as-is; we have posted it here for transparency.
-
-The second version, `naive-listener_jsPsych.html`, and associated jsPsych files, is a version of the same experiment converted to run in standalone jsPsych (i.e., without Pushkin or any other software). While this code was not actually used to collect data, we made it to facilitate demonstration of the experiment (using only a fixed set of 16 recordings in the corpus, rather than drawing from the whole corpus). It can be used to understand the structure of the code that *was* used to collect data and is intended for informational/educational purposes. It is not a direct replication of the experiment reported in the paper. To try the demonstration experiment, clone this repository and open `naive-listener_jsPsych.html` in a browser.
+Code for generating figures in the paper is located in '/Code/Plots.RMD'.​
