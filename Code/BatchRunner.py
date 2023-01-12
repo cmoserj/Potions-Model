@@ -11,11 +11,11 @@ from Model_Ring import NetworkModel, average_score, compute_gini #If running ran
 
 #Select batch parameters
 #Load network and score keeping functions
-variable_params = {"num_agents": [50],
-                   #"prob_edge": [50], #Edge probability for Random graph
-                   #"cliqueK": [24], #Size of cliques for caveman graph
-                   #"cliques":[2], #Number of cliques for caveman graph
-                   "change_link": [0], #Default = 0
+variable_params = {"num_agents": [50], #Num_agents for Random and Ring, mute for Caveman
+                   #"prob_edge": [50], #Edge probability for Random graph, mute for Ring and Caveman
+                   #"cliqueK": [24], #Size of cliques for caveman graph, mute for Ring and Random
+                   #"cliques":[2], #Number of cliques for caveman graph, mute for Ring and Random
+                   "change_link": [0], #Default = 0, to specify range, such as 0-100 in steps of 10; use range(0,10,110)
                    "prob_diff": [100]} #Default = 100
 
 #Set up batch run parameters
@@ -25,9 +25,9 @@ batch_run = BatchRunner(NetworkModel,
                           max_steps=1000,
                           model_reporters={
                               "NumAgents": lambda m:m.num_agents,
-                              #"ProbEdge": lambda m:m.prob_edge, #Edge probability for Random graph
-                              #"Cliques": lambda m:m.cliques, #Size of cliques for caveman graph
-                              #"CliqueSize": lambda m:m.cliqueK, #Number of cliques for caveman graph
+                              #"ProbEdge": lambda m:m.prob_edge, #Edge probability for Random graph, mute for Ring and Caveman
+                              #"Cliques": lambda m:m.cliques, #Size of cliques for caveman graph, mute for Ring and Random
+                              #"CliqueSize": lambda m:m.cliqueK, #Number of cliques for caveman graph, mute for Ring and Random
                               "ProbDiff": lambda m: m.prob_diff,
                               "ChangeLink": lambda m: m.change_link,
                               "Initial Path Length": lambda m: m.initpathlength,
