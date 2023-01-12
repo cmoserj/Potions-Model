@@ -10,7 +10,7 @@ You can find the following here:
 - CSV data files for data used in the paper
 - An Rmarkdown file for generating plots from our paper
 
-**For assistance, please contact the corresponding authors: Cody Moser (cmoser2@ucmerced.edu)**
+**For assistance, please contact the corresponding author: Cody Moser (cmoser2@ucmerced.edu)**
 
 ## Anatomy of the repo
 
