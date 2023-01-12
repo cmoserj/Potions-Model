@@ -18,22 +18,22 @@ You can find the following here:
 
 The model is run using the Mesa agent-based modeling library for batchruns and data visualization.
 
-All models are listed under '/Code', beginning with Model_. Except in the case of real world networks (Model_RWNetworks) these files need not be altered to run the visualization or batchrunner.
+All models are listed under `/Code`, beginning with Model_. Except in the case of real world networks (`Model_RWNetworks.py`) these files need not be altered to run the visualization or batchrunner.
 
-To run the visualizer, launch Viz_Server.py and specify which network you are using in the fifth line of code and alter the model_params as specified in the comments.
+To run the visualizer, launch `Viz_Server.py` and specify which network you are using in the fifth line of code and alter the model_params as specified in the comments.
 
-To run the batchrunner, launch BatchRunner.py and specify which network you are using the second line of code. Alter the model_params as specified in the comments.
+To run the batchrunner, launch `BatchRunner.py` and specify which network you are using the second line of code. Alter the model_params as specified in the comments.
 
-For using your own real world networks, alter which network you are using in lines 47-55 of Model_RWNetworks.py. For batchruns, use BatchRunnerRW.py
+For using your own real world networks, alter which network you are using in lines 47-55 of `Model_RWNetworks.py`. For batchruns, use `BatchRunnerRW.py`.
 
 ### Edge Lists for Real World Networks Used
 
-All edge lists are contained under '/EdgeLists'. mercedcogsci.csv and karate.txt are unweighted networks, all other networks are weighted.
+All edge lists are contained under `/EdgeLists`. `mercedcogsci.csv` and `karate.txt` are unweighted networks, all other networks are weighted.
 
 ### Results
 
-Data used in the paper to generate our plots and results are CSV files listed under '/Results/'.
+Data used in the paper to generate our plots and results are CSV files listed under `/Results/`.
 
 ### Plotting the Data
 
-Code for generating figures in the paper is located in '/Code/Plots.RMD'.​
+Code for generating figures in the paper is located in `/Code/Plots.RMD`.
