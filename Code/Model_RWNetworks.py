@@ -1,3 +1,10 @@
+# Real World Network Model
+# Script written by Cody Moser
+# This script runs the Potions Task on Real World Networks
+# Specify in BatchRunner whether your network is weighted or unweighted
+# Data should be provided in the form of edge lists rather than adjacency matrixes
+# See lines 47-55 for uploading your edge lists
+
 from mesa import Agent, Model
 from mesa.time import RandomActivation
 from mesa.datacollection import DataCollector

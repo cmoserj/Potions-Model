@@ -1,3 +1,9 @@
+# Mesa Potions Task DataViz
+# Script written by Cody Moser
+# This script will take your random, caveman, or ring networks and visualize them in the Potions Task in an Apache server.
+# Commment in or out the relevant sections under model_params to run your network
+# Does not run Real World networks
+
 from mesa.visualization.ModularVisualization import ModularServer
 from mesa.visualization.UserParam import UserSettableParameter
 from mesa.visualization.modules import ChartModule

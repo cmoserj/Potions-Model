@@ -15,18 +15,20 @@ library(ggnewscale)
 
 path<-('../git/PotionsABM/Results/')
 
+#Import data, calculate Combination Time, and scale Gini variables
 random <- read.csv(paste(path,"random.csv", sep='')) %>% 
   filter(Crossover == 1) %>% 
   mutate(ProbDiff = 1 - ProbDiff,
          ChangeLink = 1 - ChangeLink,
          CombTime = NumAgents*Step,
-         mutate(Gini = scale(Gini)))
+         Gini = scale(Gini))
 
 caveman <-read.csv(paste(path,'caveman.csv',sep='')) %>% 
   filter(Crossover == 1) %>% 
   mutate(ProbDiff = 1 - ProbDiff,
          ChangeLink = 1 - ChangeLink,
-         CombTime = NumAgents*Step)
+         CombTime = NumAgents*Step,
+         Gini = scale(Gini))
 ```
 
 
@@ -222,7 +224,7 @@ changegini<-ggplot(data=random %>%
 change+changecomb+changini
 ```
 
-Combine all plots:
+Combine all plots (Figure 2):
 ```{r}
 top_row<-plot_grid(pop,popgini)
 mid_row<-plot_grid(diff,diffgini)
@@ -231,10 +233,12 @@ plot_grid(top_row,mid_row,bottom_row,
           ncol=1,
           labels=c("A","B","C"))
 
+#Layout specified using patchwork library
 layout2<-"
 ADG
 BEH
 CFI"
+
 Fig2<-pop+popcom+popgini+diff+diffcomb+diffgini+change+changecomb+changegini+
   plot_layout(design=layout2)+
   plot_annotation(tag_levels = 'A')
@@ -242,7 +246,7 @@ Fig2<-pop+popcom+popgini+diff+diffcomb+diffgini+change+changecomb+changegini+
 Fig2
 ```
 
-Caveman Plots:
+Caveman Plots (Figure 3):
 ```{r}
 cavegraph<-ggplot(data=caveman %>%
                    mutate(CliqueSize = as.factor(CliqueSize)) %>%
@@ -287,7 +291,7 @@ cavegini<-ggplot(data=caveman %>%
     guides(colour = guide_legend(override.aes = list(size=5)))+
       scale_color_viridis(discrete=T,option="inferno")
 
-
+#Layout specified using patchwork library
 cavelayout<-"
 A
 B"
@@ -382,7 +386,7 @@ cc4<-ggplot(data=caveman %>%
       x="")+
     guides(colour = guide_legend(override.aes = list(size=2)))
 
-
+#Layout specified using patchwork library
 cclayout<-"
 AB
 CD"
@@ -485,6 +489,7 @@ change4<-ggplot(data=random %>%
       x="")+
     guides(colour = guide_legend(override.aes = list(size=5)))
 
+#Layout specified using patchwork library
 layout3<-"ABCD"
 
 SIFig1<-change1+change2+change3+change4+

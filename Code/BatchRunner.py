@@ -1,3 +1,9 @@
+# Model Batchrunner
+# Script written by Cody Moser
+# This script will take your Caveman, Random, and Ring networks and run them in batches using Mesa batchrunner
+# Not optimized for multiprocessing due to incompatibilities between Windows and Mesa
+# See documentation for multiprocessing batchruns: https://mesa.readthedocs.io/en/main/apis/batchrunner.html
+
 #Import Mesa batchrunner
 from mesa.batchrunner import BatchRunner
 

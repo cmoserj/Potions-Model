@@ -1,3 +1,8 @@
+# Random Network Model
+# Script written by Cody Moser
+# This script runs the Potions Task on Random Networks
+# Specify parameters in BatchRunner or in Viz_Server your parameters and run that file
+
 from mesa import Agent, Model
 from mesa.time import RandomActivation
 from mesa.datacollection import DataCollector

@@ -1,3 +1,10 @@
+# Model Batchrunner for Real World Networks
+# Script written by Cody Moser
+# This script will take your Real World networks and batch run them.
+# Specify whether networks are weighted or unweighted
+# Not optimized for multiprocessing due to incompatibilities between Windows and Mesa
+# See documentation for multiprocessing batchruns: https://mesa.readthedocs.io/en/main/apis/batchrunner.html
+
 #Import Mesa batchrunner
 from mesa.batchrunner import BatchRunner
 
