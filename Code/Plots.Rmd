@@ -12,7 +12,7 @@ library(tidyverse)
 library(patchwork)
 library(viridis)
 
-path<-('K:/git/Potions-Model/Results/')
+path<-('../git/Potions-Model/Results/')
 
 #Import data, calculate Combination Time, and scale Gini variables
 random <- read.csv(paste(path,"random.csv", sep='')) %>% 
@@ -23,6 +23,13 @@ random <- read.csv(paste(path,"random.csv", sep='')) %>%
          Gini = scale(Gini))
 
 caveman <-read.csv(paste(path,'caveman.csv',sep='')) %>% 
+  filter(Crossover == 1) %>% 
+  mutate(ProbDiff = 1 - ProbDiff,
+         ChangeLink = 1 - ChangeLink,
+         CombTime = NumAgents*Step,
+         Gini = scale(Gini))
+
+ring <-read.csv(paste(path,'ring.csv',sep='')) %>% 
   filter(Crossover == 1) %>% 
   mutate(ProbDiff = 1 - ProbDiff,
          ChangeLink = 1 - ChangeLink,
@@ -78,7 +85,7 @@ popgini<- ggplot(data=random %>%
                            NumAgents != 5,
                            ProbDiff == 1)
                   ,aes(y=Gini, x=ProbEdge,color=NumAgents))+
-  stat_summary(fun="mean", geom="point", show.legend=T)+
+  stat_summary(fun="mean", geom="point", show.legend=F)+
   stat_summary(fun="mean", geom="line", show.legend=F,size=1.3)+
   theme_bw()+
   theme(plot.title=element_text(hjust=0.5, size=20,margin=margin(b=10)),
@@ -406,7 +413,33 @@ Fig4<-cc1+cc2+cc3+cc4+
 Fig4
 ```
 
-More In-depth Link change Plot (SI Fig. 1):
+Plot for ring networks (SI Fig. 1)
+```{r}
+ring.melt <- reshape2::melt(ring %>%
+                              mutate(Step=scale(Step)), id.vars = 'NumAgents', variable.name = 'Measure', 
+    value.name = 'Performance') %>%
+    filter(Measure == c('Step','Gini'))
+
+SIFig1 <- ggplot(data=ring.melt %>% 
+                   group_by(NumAgents,Measure) %>%
+                   summarise_all(mean)) + 
+  geom_line(aes(y=Performance,x=NumAgents, color = Measure), show.legend=F, size=1)+
+  geom_point(aes(y=Performance,x=NumAgents, color = Measure), size=2.05)+
+  theme_bw()+
+  theme(plot.title=element_text(hjust=0.5),
+        text=element_text(size=15),
+                aspect.ratio=.8,                
+        axis.title.y = element_text(margin=margin(r=20),size=20))+
+  labs(title="Ring Networks",
+       x="Number of Agents",
+       y="Scaled Performance",
+       color="Measure")+
+  scale_color_manual(values = c("Gini" = '#00b0f0','Step' = '#ff0000'))
+
+SIFig1
+```
+
+More In-depth Link change Plot (SI Fig. 2):
 ```{r}
 change1<-ggplot(data=random %>% 
                      filter(NumAgents == 15) %>%
@@ -496,10 +529,10 @@ change4<-ggplot(data=random %>%
 #Layout specified using patchwork library
 layout3<-"ABCD"
 
-SIFig1<-change1+change2+change3+change4+
+SIFig2<-change1+change2+change3+change4+
   plot_layout(design=layout3)+
   plot_annotation(title = 'Probability of Link Alteration', 
                   theme = theme(plot.title = element_text(hjust = 0.5,size=25,vjust=-43)))
 
-SIFig1
+SIFig2
 ```
