@@ -12,7 +12,7 @@ library(tidyverse)
 library(patchwork)
 library(viridis)
 
-path<-('K:/git/Potions-Model/Results/')
+path<-('../git/Potions-Model/Results/')
 
 #Import data, calculate Combination Time, and scale Gini variables
 random <- read.csv(paste(path,"random.csv", sep='')) %>% 
@@ -262,7 +262,100 @@ Fig2<-pop+popcom+popgini+diff+diffcomb+diffgini+change+changecomb+changegini+
 Fig2
 ```
 
-Caveman Plots (Figure 3):
+Scatterplot (Fig. 3)
+```{r}
+#Alter the original datasets so that they are just the normalized Gini, normalized step, normalized CombTime, and each parameter combination
+
+randscatter<-random %>%
+  unite("Param", 2:5) %>%
+  select(Gini,Step,CombTime,Param) %>%
+  mutate(Step=scale(Step),
+         CombTime=scale(CombTime)) %>%
+  group_by(Param) %>%
+  summarise_if(is.numeric,mean,na.rm=T) %>%
+  mutate(Network="Random")
+  
+ringscatter<-ring %>%
+  unite("Param", 2:4) %>%
+  select(Gini,Step,CombTime,Param) %>%
+  mutate(Step=scale(Step),
+         CombTime=scale(CombTime)) %>%
+  group_by(Param) %>%
+  summarise_if(is.numeric,mean,na.rm=T) %>%
+  mutate(Network="Ring")
+
+cavescatter<-caveman %>%
+  unite("Param", 2:5) %>%
+  select(Gini,Step,CombTime,Param) %>%
+  mutate(Step=scale(Step),
+         CombTime=scale(CombTime)) %>%
+  group_by(Param) %>%
+  summarise_if(is.numeric,mean,na.rm=T) %>%
+  mutate(Network="Caveman")
+
+RWscatter<-RW %>%
+    select(Gini,Step,CombTime,Network) %>%
+    mutate(Step=scale(Step),
+          CombTime=scale(CombTime)) %>%
+  group_by(Network) %>%
+  summarise_if(is.numeric,mean,na.rm=T) %>%
+  mutate(Param=Network,
+         Network="Real World")
+
+scatter<- list(randscatter,ringscatter,cavescatter) %>%
+  reduce(full_join) %>%
+  mutate(Network = factor(Network, levels=c("Random","Caveman","Ring","Real World")))
+
+#Create the Scatterplots
+scatstep<-ggplot()+
+  geom_point(data=scatter,aes(y=Step, x=Gini,color=Network),alpha=0.3,show.legend=T)+
+  geom_point(data=RWscatter,aes(y=Step, x=Gini),color="black")+
+  ggrepel::geom_text_repel(data=RWscatter,aes(y=Step, x=Gini,label=Param),show.legend = F)+
+  theme_bw()+
+  theme(plot.title=element_text(hjust=0.5,size=20,margin=margin(b=10)),
+        text=element_text(size=15),
+        axis.title.y = element_text(margin=margin(r=20)),
+        legend.title= element_text(size=15),
+        aspect.ratio=1,
+        legend.title.align = 0.5)+
+  labs(title="Inequality and Performance\nAcross All Networks",
+       y="Steps (Scaled)",
+       x="",
+       color="Network")+
+    guides(colour = guide_legend(override.aes = list(size=5,alpha=1)))+
+    scale_color_viridis(discrete=T, direction = -1)
+
+
+scatcomb<-ggplot()+
+  geom_point(data=scatter,aes(y=CombTime, x=Gini,color=Network),alpha=0.3,show.legend=F)+
+  geom_point(data=RWscatter,aes(y=CombTime, x=Gini),color="black")+
+  ggrepel::geom_text_repel(data=RWscatter,aes(y=CombTime, x=Gini,label=Param),show.legend = F)+
+  theme_bw()+
+  theme(plot.title=element_text(hjust=0.5,size=20,margin=margin(b=10)),
+        text=element_text(size=15),
+        axis.title.y = element_text(margin=margin(r=20)),
+        legend.title= element_text(size=15),
+        aspect.ratio=1,
+        legend.title.align = 0.5)+
+  labs(y="Combinations (Scaled)",
+      color="Network",
+      x="Gini Coefficient (Scaled)")+
+  guides(colour = guide_legend(override.aes = list(alpha=1)))+
+  scale_color_viridis(discrete=T,direction=-1)
+
+scatlayout<-"
+A
+B"
+
+Fig3<-scatstep+scatcomb+
+  plot_layout(design=scatlayout)+
+  plot_annotation(theme = theme(plot.title = element_text(hjust = 0.5,size=25)),
+                  tag_levels = "A")
+
+Fig3
+```
+
+Caveman Plots (Figure 4):
 ```{r}
 cavegraph<-ggplot(data=caveman %>%
                    mutate(CliqueSize = as.factor(CliqueSize)) %>%
@@ -314,11 +407,11 @@ cavelayout<-"
 A
 B"
 
-Fig3<-cavegraph+cavegini+
+Fig4<-cavegraph+cavegini+
   plot_layout(design=cavelayout)+
   plot_annotation(tag_levels = 'A')
 
-Fig3
+Fig4
 ```
 
 
@@ -409,7 +502,7 @@ cclayout<-"
 AB
 CD"
 
-Fig4<-cc1+cc2+cc3+cc4+
+Fig5<-cc1+cc2+cc3+cc4+
   plot_layout(design=cclayout)+
   plot_annotation(title = 'Dynamic Caveman Networks', 
                   subtitle = 'Link Alteration Probability',
@@ -417,7 +510,7 @@ Fig4<-cc1+cc2+cc3+cc4+
                                 plot.subtitle = element_text(hjust=0.5,vjust=-125,size=20)))+
   plot_annotation(tag_levels = 'A')
 
-Fig4
+Fig5
 ```
 
 Plot for ring networks (SI Fig. 1)
@@ -543,96 +636,4 @@ SIFig2<-change1+change2+change3+change4+
                   theme = theme(plot.title = element_text(hjust = 0.5,size=25,vjust=-43)))
 
 SIFig2
-```
-
-Scatterplot (SI Fig. )
-```{r}
-#Alter the original datasets so that they are just the normalized Gini, normalized step, normalized CombTime, and each parameter combination
-
-randscatter<-random %>%
-  unite("Param", 2:5) %>%
-  select(Gini,Step,CombTime,Param) %>%
-  mutate(Step=scale(Step),
-         CombTime=scale(CombTime)) %>%
-  group_by(Param) %>%
-  summarise_if(is.numeric,mean,na.rm=T) %>%
-  mutate(Network="Random")
-  
-ringscatter<-ring %>%
-  unite("Param", 2:4) %>%
-  select(Gini,Step,CombTime,Param) %>%
-  mutate(Step=scale(Step),
-         CombTime=scale(CombTime)) %>%
-  group_by(Param) %>%
-  summarise_if(is.numeric,mean,na.rm=T) %>%
-  mutate(Network="Ring")
-
-cavescatter<-caveman %>%
-  unite("Param", 2:5) %>%
-  select(Gini,Step,CombTime,Param) %>%
-  mutate(Step=scale(Step),
-         CombTime=scale(CombTime)) %>%
-  group_by(Param) %>%
-  summarise_if(is.numeric,mean,na.rm=T) %>%
-  mutate(Network="Caveman")
-
-RWscatter<-RW %>%
-    select(Gini,Step,CombTime,Network) %>%
-    mutate(Step=scale(Step),
-          CombTime=scale(CombTime)) %>%
-  group_by(Network) %>%
-  summarise_if(is.numeric,mean,na.rm=T) %>%
-  mutate(Param=Network,
-         Network="Real World")
-
-
-scatter<- list(randscatter,ringscatter,cavescatter) %>%
-  reduce(full_join) %>%
-  mutate(Network = factor(Network, levels=c("Random","Caveman","Ring","Real World")))
-
-#Create the Scatterplot
-scatstep<-ggplot()+
-  geom_point(data=scatter,aes(y=Step, x=Gini,color=Network),alpha=0.3,show.legend=F)+
-  geom_point(data=RWscatter,aes(y=Step, x=Gini),color="black")+
-  ggrepel::geom_text_repel(data=RWscatter,aes(y=Step, x=Gini,label=Param),show.legend = F)+
-  theme_bw()+
-  theme(plot.title=element_text(hjust=0.5,size=20,margin=margin(b=10)),
-        text=element_text(size=17),
-        axis.title.y = element_text(margin=margin(r=20)),
-        legend.title= element_text(size=15),
-        aspect.ratio=1,
-        legend.title.align = 0.5)+
-  labs(title="Steps to Crossover",
-    y="Time (Scaled)",
-       color="Network",
-       x="Gini Coefficient (Scaled)")+
-    guides(colour = guide_legend(override.aes = list(size=5)))+
-    scale_color_viridis(discrete=T, direction = -1)
-
-
-scatcomb<-ggplot()+
-  geom_point(data=scatter,aes(y=CombTime, x=Gini,color=Network),alpha=0.3)+
-  geom_point(data=RWscatter,aes(y=CombTime, x=Gini),color="black")+
-  ggrepel::geom_text_repel(data=RWscatter,aes(y=CombTime, x=Gini,label=Param),show.legend = F)+
-  theme_bw()+
-  theme(plot.title=element_text(hjust=0.5,size=20,margin=margin(b=10)),
-        text=element_text(size=17),
-        axis.title.y = element_text(margin=margin(r=20)),
-        legend.title= element_text(size=15),
-        aspect.ratio=1,
-        legend.title.align = 0.5)+
-  labs(title="Combinations to Crossover",
-       y="",
-      color="Network",
-      x="Gini Coefficient (Scaled)")+
-  scale_color_viridis(discrete=T, direction = -1)
-
-scatlayout<-"AB"
-
-SIFig3<-scatstep+scatcomb+
-  plot_layout(design=scatlayout)+
-  plot_annotation(title = 'Performance vs Gini\nAll Networks, All Parameters', 
-                  theme = theme(plot.title = element_text(hjust = 0.5,size=25)))
-
-SIFig3
 ```
