@@ -12,7 +12,7 @@ library(tidyverse)
 library(patchwork)
 library(viridis)
 
-path<-('../git/Potions-Model/Results/')
+path<-('.../git/Potions-Model/Results/')
 
 #Import data, calculate Combination Time, and scale Gini variables
 random <- read.csv(paste(path,"random.csv", sep='')) %>% 
@@ -637,3 +637,25 @@ SIFig2<-change1+change2+change3+change4+
 
 SIFig2
 ```
+
+Calculate Success Rates (SI Table 1):
+```{r}
+successrand <- read.csv(paste(path,"random.csv", sep='')) %>% 
+  group_by(NumAgents) %>%
+  summarise(SuccessRate = mean(Crossover)) %>%
+  mutate(Network = "Random")
+
+successcave <- read.csv(paste(path,"caveman.csv", sep='')) %>% 
+  group_by(NumAgents) %>%
+  summarise(SuccessRate = mean(Crossover)) %>%
+  mutate(Network = "Caveman")
+  
+successring <- read.csv(paste(path,"ring.csv", sep='')) %>% 
+  group_by(NumAgents) %>%
+  summarise(SuccessRate = mean(Crossover)) %>%
+  mutate(Network = "Ring")
+
+success<- list(successring,successrand,successcave) %>%
+  reduce(full_join)
+```
+
