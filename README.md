@@ -4,7 +4,7 @@ This is the repository for Moser & Smaldino (2023) "Innovation-Facilitating Netw
 
 You can find the following here:
 - Python code for generating and running the Potions Task on Random, Connected Caveman, Ring, and your own real world networks! 
-- Two Mesa Batchrunners: one for the Random, Caveman, and Ringer networks and one for weighted and unweighted real world networks.
+- Two Mesa Batchrunners: one for the Random, Caveman, and Ring networks and one for weighted and unweighted real world networks.
 - A Mesa Visualization Server: use this to visualize Random, Connected Caveman, and Ring networks playing the Potions Task 
 - Edge lists for all networks in the study
 - CSV data files for data used in the study
