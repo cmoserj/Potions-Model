@@ -22,7 +22,7 @@ All models are listed under `/Code`, beginning with `Model_`. Except in the case
 
 To run the visualizer, launch `Viz_Server.py` and specify which network you are using in the fifth line of code. Alter the `model_params` as specified in the comments.
 
-To run the batchrunner, launch `BatchRunner.py` and specify which network you are using the second line of code. Alter the `model_params` as specified in the comments.
+To run the batchrunner, launch `BatchRunner.py` and specify which network you are using in the second line of code. Alter the `model_params` as specified in the comments.
 
 For using your own real world networks, alter which network you are using in `lines 47-55` of `Model_RWNetworks.py`. For batchruns, use `BatchRunnerRW.py`.
 
