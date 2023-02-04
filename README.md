@@ -1,6 +1,6 @@
 # Innovation-Facilitating Networks Create Inequality
 
-This is the repository for Moser & Smaldino (2023) "Innovation-Facilitating Networks Create Inequality". The manuscript is publicly available at [].
+This is the repository for Moser & Smaldino (2023) "Innovation-Facilitating Networks Create Inequality". The manuscript is publicly available at https://osf.io/preprints/socarxiv/n3hc6.
 
 You can find the following here:
 - Python code for generating and running the Potions Task on Random, Connected Caveman, Ring, and your own real world networks! 
