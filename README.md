@@ -32,7 +32,8 @@ All edge lists are contained under `/EdgeLists`. `mercedcogsci.csv` and `karate.
 
 ### Results
 
-Data used in the study to generate our plots and results are `csv` files listed under `/Results`.
+Data used in the study to generate our plots and results are located in a separate Dyrad repository:
+`https://doi.org/10.5061/dryad.hhmgqnknz`
 
 ### Plotting the Data
 
