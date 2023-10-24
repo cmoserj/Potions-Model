@@ -7,7 +7,6 @@ You can find the following here:
 - Two Mesa Batchrunners: one for the Random, Caveman, and Ring networks and one for weighted and unweighted real world networks.
 - A Mesa Visualization Server: use this to visualize Random, Connected Caveman, and Ring networks playing the Potions Task 
 - Edge lists for all networks in the study
-- CSV data files for data used in the study
 - An Rmarkdown file for generating plots from our manuscript
 
 **For assistance, please contact the corresponding author: Cody Moser (cmoser2@ucmerced.edu)**
