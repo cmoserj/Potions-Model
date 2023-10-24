@@ -36,12 +36,22 @@ class NetworkModel(Model):
     id_gen = itertools.count(1)
 
     #Define initialization parameters for the network; these are also defined in the batch script
-    def __init__(self, num_agents=26, prob_edge=1, change_link=0, prob_diff = 100,dummy=0):
+    def __init__(self, num_agents=26, prob_edge=1, change_link=0, prob_diff = 100,ranked=0,postcross = 0):
 
         #Set crossover to 0 and the step the model is in to 0
         self.crossover = 0
+        self.crossed = 0
         self.stage = 0
+
+        #Set model ranked gini and postcross variables
+        self.ranked = ranked
+        self.postcross = postcross
         self.uid = next(self.id_gen)
+
+        #Set markers for whether the 3A, 3B, or Final potions have been obtained
+        self.Pot3A = False
+        self.Pot3B = False
+        self.Final = False
 
         #Set up the parameters for the network and agent behavior
         self.num_agents = num_agents
@@ -62,8 +72,14 @@ class NetworkModel(Model):
         #Check if graph is connected. If not, do not collect path length
         if nx.is_connected(self.G):
             self.initpathlength = nx.average_shortest_path_length(self.G)
+            self.Gdcentrality = nx.degree_centrality(self.G)
+            self.Gbcentrality = nx.betweenness_centrality(self.G)
+            self.Gccentrality = nx.closeness_centrality(self.G)
         else:
             self.initpathlength = 'NA'
+            self.Gdcentrality = 'NA'
+            self.Gbcentrality = 'NA'
+            self.Gccentrality = 'NA'
 
         #Set schedule - in our case, the order of agent behavior is random at each step
         self.schedule = RandomActivation(self)
@@ -82,9 +98,22 @@ class NetworkModel(Model):
                              "Gini": compute_gini,
                              "Step": lambda m: m.stage,
                              "Crossover": lambda m: m.crossover,
+                             "CrossStep": lambda m: m.crossed,
                              "IncompleteGraph": lambda m: m.incomplete
                              #"Connectivity": lambda m:m.connectivity,
                              #"Run": track_run
+                             },
+            agent_reporters={"Agent": "pos",
+                             "Pot3A": "Pot3A",
+                             "Pot3B": "Pot3B",
+                             "Final": "Final",
+                             "DegreeCent": "dcentrality",
+                             "BetweenCent": "bcentrality",
+                             "ClosenessCen": "ccentrality",
+                             "Neighbors": "nsize",
+                             "MaxScore": "score",
+                             "CumScore": "cum_score",
+                             "Potions": "pots"
                              })
 
         #Allow model to run on its own rather than step by step
@@ -146,26 +175,51 @@ class NetworkModel(Model):
             self.change_connections()
         self.schedule.step()
         self.datacollector.collect(self)
-        #End simulation when crossover is obtained
-        if self.crossover == 1:
-            self.running = False
+        #Check if a crossover has been obtained
+        if self.crossover > 0:
+            #If model is doing post-crossove steps, iterate until 100 steps
+            self.crossed = 1
+            if self.postcross == 1:
+                self.crossed = self.crossed + 1
+                if self.crossed == 100:
+                    self.running = False
+            #Else: end model at crossover
+            else:
+                self.running = False
 
 class Traders(Agent):
     #Create agents
     def __init__(self, unique_id, model):
         #Create agents with a unique ID
         super().__init__(unique_id, model)
-        #Give each agent the initial inventory consisting of: Potion, Trajectory, Value, and Score
+        #Give each agent the initial inventory consisting of: Potion, Trajectory, Value, Score, and Rank
         self.inventory = np.array([
-            ['a1','a', 6, 0],
-            ['a2','a', 8, 0],
-            ['a3','a', 10, 0],
-            ['b1','b', 6, 0],
-            ['b2','b', 8, 0],
-            ['b3','b', 10, 0]
+            ['a1','a', 6, 0, 0],
+            ['a2','a', 8, 0, 0],
+            ['a3','a', 10, 0, 0],
+            ['b1','b', 6, 0, 0],
+            ['b2','b', 8, 0, 0],
+            ['b3','b', 10, 0, 0]
         ])
         #Set initial score to 0
         self.score= 0
+        self.cum_score = 0
+        self.pots = len(self.inventory)
+        self.Pot3A = []
+        self.Pot3B = []
+        self.Final = []
+
+        #Calculate centrality measures
+        if nx.is_connected(self.model.G):
+            self.dcentrality = self.model.Gdcentrality[self.unique_id]
+            self.bcentrality  = self.model.Gbcentrality[self.unique_id]
+            self.ccentrality = self.model.Gccentrality[self.unique_id]
+            self.nsize = self.model.G.degree(self.unique_id)
+        else:
+            self.dcentrality = 'NA'
+            self.bcentrality  = 'NA'
+            self.ccentrality = 'NA'
+            self.nsize = 'NA'
 
     #Function for agents to find neighbors
     def get_neighborhood(self):
@@ -197,7 +251,7 @@ class Traders(Agent):
     #Based on the combinations, check if they add up to new innovation tiers
     def combine(self):
         if all(x in self.item_set for x in ['a1', 'a2', 'a3']):
-            ingredient_1a = ['1a','a', 48, 48]#15
+            ingredient_1a = ['1a','a', 48, 48, 1]
             #add ingredient 1a to inventory
             if '1a' not in self.inventory:
                 self.inventory = np.vstack([self.inventory,ingredient_1a])
@@ -215,7 +269,7 @@ class Traders(Agent):
                             self.partner_neighbors[x].inventory = np.vstack([self.partner_neighbors[x].inventory, ingredient_1a])
 
         elif all(x in self.item_set for x in ['b1', 'b2', 'b3']):
-            ingredient_1b = ['1b','b', 48, 48]
+            ingredient_1b = ['1b','b', 48, 48, 1]
             if '1b' not in self.inventory:
                 self.inventory = np.vstack([self.inventory,ingredient_1b])
             for x in range (len(self.neighbors)):
@@ -230,7 +284,7 @@ class Traders(Agent):
                         self.partner_neighbors[x].inventory = np.vstack([self.partner_neighbors[x].inventory, ingredient_1b])
 
         elif all(x in self.item_set for x in ['1a', 'a1', 'b2']):
-            ingredient_2a = ['2a','a', 109, 109]#20
+            ingredient_2a = ['2a','a', 109, 109, 2]#20
             if '2a' not in self.inventory:
                 self.inventory = np.vstack([self.inventory,ingredient_2a])
             for x in range (len(self.neighbors)):
@@ -245,7 +299,7 @@ class Traders(Agent):
                         self.partner_neighbors[x].inventory = np.vstack([self.partner_neighbors[x].inventory, ingredient_2a])
 
         elif all(x in self.item_set for x in['1b', 'a2', 'a3']):
-            ingredient_2b = ['2b','b', 109, 109]
+            ingredient_2b = ['2b','b', 109, 109, 2]
             if '2b' not in self.inventory:
                 self.inventory = np.vstack([self.inventory,ingredient_2b])
             for x in range (len(self.neighbors)):
@@ -260,9 +314,14 @@ class Traders(Agent):
                         self.partner_neighbors[x].inventory = np.vstack([self.partner_neighbors[x].inventory, ingredient_2b])
 
         elif all(x in self.item_set for x in['2a', 'b2', 'a3']):
-            ingredient_3a = ['3a','a', 188, 188]#25
+            ingredient_3a = ['3a','a', 188, 188, 3]#25
             if '3a' not in self.inventory:
                 self.inventory = np.vstack([self.inventory,ingredient_3a])
+                #Check to see if agent is the first to obtain Potion 3A, if so mark partner and self
+                if self.model.Pot3A == False:
+                    self.model.Pot3A = True
+                    self.Pot3A = 1
+                    self.partner.Pot3A = 1
             for x in range (len(self.neighbors)):
                 if '3a' not in self.neighbors[x].inventory:
                     if random.uniform(0, 1) > self.model.prob_diff:
@@ -275,9 +334,14 @@ class Traders(Agent):
                         self.partner_neighbors[x].inventory = np.vstack([self.partner_neighbors[x].inventory, ingredient_3a])
 
         elif all(x in self.item_set for x in['2b', 'b1', 'a2']):
-            ingredient_3b = ['3b','b', 188, 188]
+            ingredient_3b = ['3b','b', 188, 188, 3]
             if '3b' not in self.inventory:
                 self.inventory = np.vstack([self.inventory,ingredient_3b])
+                #Check to see if agent is the first to obtain Potion 3B, if so mark partner and self
+                if self.model.Pot3B == False:
+                    self.model.Pot3B = True
+                    self.Pot3B = 1
+                    self.partner.Pot3B = 1
             for x in range (len(self.neighbors)):
                 if '3b' not in self.neighbors[x].inventory:
                     if random.uniform(0, 1) > self.model.prob_diff:
@@ -290,9 +354,14 @@ class Traders(Agent):
                         self.partner_neighbors[x].inventory = np.vstack([self.partner_neighbors[x].inventory, ingredient_3b])
 
         elif all(x in self.item_set for x in['3a', '3b', '2a']):
-            ingredient_4a = ['4a','a', 358, 358]#30
+            ingredient_4a = ['4a','a', 358, 358, 4]#30
             if '4a' not in self.inventory:
                 self.inventory = np.vstack([self.inventory,ingredient_4a])
+                #Check to see if agent is the first to obtain Potion 4A, if so mark partner and self
+                if self.model.Final == False:
+                    self.model.Final = True
+                    self.Final = 1
+                    self.partner.Final = 1
             for x in range (len(self.neighbors)):
                 if '4a' not in self.neighbors[x].inventory:
                     if random.uniform(0, 1) > self.model.prob_diff:
@@ -305,9 +374,14 @@ class Traders(Agent):
                         self.partner_neighbors[x].inventory = np.vstack([self.partner_neighbors[x].inventory, ingredient_4a])
 
         elif all(x in self.item_set for x in['3b', '3a', '2b']):
-            ingredient_4b = ['4b','b', 358, 358]
+            ingredient_4b = ['4b','b', 358, 358, 4]
             if '4b' not in self.inventory:
                 self.inventory = np.vstack([self.inventory,ingredient_4b])
+                #Check to see if agent is the first to obtain Potion 4B, if so mark partner and self
+                if self.model.Final == False:
+                    self.model.Final = True
+                    self.Final = 1
+                    self.partner.Final = 1
             for x in range (len(self.neighbors)):
                 if '4b' not in self.neighbors[x].inventory:
                     if random.uniform(0, 1) > self.model.prob_diff:
@@ -320,14 +394,37 @@ class Traders(Agent):
                         self.partner_neighbors[x].inventory = np.vstack([self.partner_neighbors[x].inventory, ingredient_4b])
     #Get your score
     def collectdata(self):
-        #If everything is discovered, score = 716
-        if all(x in self.inventory[:,0] for x in ['4a', '4b']):
-            self.score = 716
+        #Report potion inventory
+        self.pots = len(self.inventory)
+
+        #Create a  cumulative score
+        #If model is not ranked, use the score
+        if self.model.ranked == 0:
+            self.cum_score = np.sum(self.inventory[:,3].astype(float))
+
+        #Else, if model is ranked, use the rank
         else:
-        #Otherwise, score is equal to maximum item score in your inventory
-            self.score = (self.inventory[:, 3].astype(float).max())
-        if self.score >= 358:
-            self.model.crossover = 1
+            self.cum_score = np.sum(self.inventory[:,4].astype(float))
+
+        #If everything is discovered, score = 716 or 5
+        if all(x in self.inventory[:,0] for x in ['4a', '4b']):
+            if self.model.ranked ==0:
+                self.score = 716
+            else:
+                self.score = 5
+
+        # Otherwise, set score equal to maximum item score in your inventory
+        else:
+            if self.model.ranked == 0:
+                self.score = (self.inventory[:, 3].astype(float).max())
+                #Note if crossover obtained
+                if self.score >= 358:
+                    self.model.crossover = 1
+            else:
+                self.score = (self.inventory[:, 4].astype(float).max())
+                #Note if crossover obtained
+                if self.score >= 4:
+                    self.model.crossover = 1
 
     def step(self):
         self.get_neighborhood()
